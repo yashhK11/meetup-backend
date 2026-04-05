@@ -1,8 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const { initializeDatabase } = require("./db/db.connect");
-require("dotenv").config();
 
 const app = express();
 
@@ -15,7 +13,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-initializeDatabase();
+mongoose
+  .connect(process.env.MONGODB)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log(err));
 
 const eventSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -77,9 +78,7 @@ app.post("/events/:id", async (req, res) => {
     const updatedEvent = await Event.findByIdAndUpdate(
       req.params.id,
       req.body,
-      {
-        new: true,
-      },
+      { new: true },
     );
     if (updatedEvent) {
       res
@@ -110,3 +109,5 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
+
+module.exports = app;
